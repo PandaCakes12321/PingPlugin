@@ -11,6 +11,7 @@ namespace PingPlugin.PingTrackers
     {
         private const string COMTrackerKey = "COM";
         private const string IpHlpApiTrackerKey = "IpHlpApi";
+        private const string TcpStatsTrackerKey = "TcpStats";
 
         private readonly IDictionary<string, TrackerInfo> trackerInfos;
         private readonly DecisionTree<string> decisionTree;
@@ -41,23 +42,33 @@ namespace PingPlugin.PingTrackers
             RegisterTracker(IpHlpApiTrackerKey,
                 new IpHlpApiPingTracker(config, addressDetector, pluginLog) { Verbose = false });
 
-            // Create decision tree to solve tracker selection problem
+            RegisterTracker(TcpStatsTrackerKey,
+                new TcpStatsPingTracker(config, addressDetector, pluginLog) { Verbose = false });
+
+            // Create decision tree to solve tracker selection problem.
+            // TcpStats reads RTT directly from the game's TCP connection and works through VPNs.
+            // It is preferred when available; COM and IpHlpApi are fallbacks.
             this.decisionTree = new DecisionTree<string>(
-                // If COM is errored
-                () => TrackerIsErrored(COMTrackerKey),
-                // Just use IpHlpApi
-                pass: new DecisionTree<string>(() => TreeResult.Resolve(IpHlpApiTrackerKey)),
+                // If TcpStats has a reading, use it — works through VPNs
+                () => !TrackerIsErrored(TcpStatsTrackerKey),
+                pass: new DecisionTree<string>(() => TreeResult.Resolve(TcpStatsTrackerKey)),
                 fail: new DecisionTree<string>(
-                    // If difference between pings is more than 30
-                    () => Math.Abs((long)GetTrackerRTT(COMTrackerKey) - (long)GetTrackerRTT(IpHlpApiTrackerKey)) > 30,
-                    pass: new DecisionTree<string>(
-                        // Use greater ping value, something's probably subtly broken
-                        () => GetTrackerRTT(COMTrackerKey) < GetTrackerRTT(IpHlpApiTrackerKey),
-                        pass: new DecisionTree<string>(() => TreeResult.Resolve(IpHlpApiTrackerKey)),
-                        fail: new DecisionTree<string>(() => TreeResult.Resolve(COMTrackerKey))
-                    ),
-                    // Otherwise, default to IpHlpApi
-                    fail: new DecisionTree<string>(() => TreeResult.Resolve(IpHlpApiTrackerKey))
+                    // If COM is errored
+                    () => TrackerIsErrored(COMTrackerKey),
+                    // Just use IpHlpApi
+                    pass: new DecisionTree<string>(() => TreeResult.Resolve(IpHlpApiTrackerKey)),
+                    fail: new DecisionTree<string>(
+                        // If difference between pings is more than 30
+                        () => Math.Abs((long)GetTrackerRTT(COMTrackerKey) - (long)GetTrackerRTT(IpHlpApiTrackerKey)) > 30,
+                        pass: new DecisionTree<string>(
+                            // Use greater ping value, something's probably subtly broken
+                            () => GetTrackerRTT(COMTrackerKey) < GetTrackerRTT(IpHlpApiTrackerKey),
+                            pass: new DecisionTree<string>(() => TreeResult.Resolve(IpHlpApiTrackerKey)),
+                            fail: new DecisionTree<string>(() => TreeResult.Resolve(COMTrackerKey))
+                        ),
+                        // Otherwise, default to IpHlpApi
+                        fail: new DecisionTree<string>(() => TreeResult.Resolve(IpHlpApiTrackerKey))
+                    )
                 )
             );
         }

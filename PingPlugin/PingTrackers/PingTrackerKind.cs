@@ -8,6 +8,7 @@ namespace PingPlugin.PingTrackers
         Aggregate,
         COM,
         IpHlpApi,
+        TcpStats,
         Packets, // No longer supported
     }
 
@@ -20,6 +21,7 @@ namespace PingPlugin.PingTrackers
                 PingTrackerKind.Aggregate => Loc.Localize("PingTrackerKindAutodetect", string.Empty),
                 PingTrackerKind.COM => Loc.Localize("PingTrackerKindCOM", string.Empty),
                 PingTrackerKind.IpHlpApi => Loc.Localize("PingTrackerKindWin32API", string.Empty),
+                PingTrackerKind.TcpStats => Loc.Localize("PingTrackerKindTcpStats", "TCP Stats"),
                 PingTrackerKind.Packets => Loc.Localize("PingTrackerKindPackets", string.Empty),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind)),
             };
