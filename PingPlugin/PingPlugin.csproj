@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <LangVersion>11.0</LangVersion>
-    <Version>2.11.1.0</Version>
+    <AssemblyName>TefferPing</AssemblyName>
+    <Version>2.11.2.0</Version>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 

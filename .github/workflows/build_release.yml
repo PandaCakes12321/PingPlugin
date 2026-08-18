@@ -37,5 +37,5 @@ jobs:
       - name: Upload Release
         uses: softprops/action-gh-release@v2
         with:
-          files: PingPlugin/bin/Release/PingPlugin/latest.zip
+          files: PingPlugin/bin/Release/TefferPing/latest.zip
           generate_release_notes: true
