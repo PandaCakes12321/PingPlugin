@@ -26,10 +26,13 @@ namespace PingPlugin.PingTrackers
                 {
                     try
                     {
-                        var rtt = GetAddressLastRTT(SeAddress);
+                        var success = TryGetAddressLastRTT(SeAddress, out var rtt);
                         var error = (WinError)Marshal.GetLastWin32Error();
 
-                        Errored = error != WinError.NO_ERROR;
+                        // GetRTTAndHopCount returns 0 (false) on failure without always setting a
+                        // Win32 error — e.g. when a VPN intercepts routing. Check the return value
+                        // explicitly so a silent failure isn't recorded as a valid 0ms reading.
+                        Errored = !success || error != WinError.NO_ERROR;
 
                         if (!Errored)
                         {
@@ -51,15 +54,17 @@ namespace PingPlugin.PingTrackers
             }
         }
 
-        private static ulong GetAddressLastRTT(IPAddress address)
+        private static bool TryGetAddressLastRTT(IPAddress address, out ulong rtt)
         {
             var addressBytes = address.GetAddressBytes();
             var addressRaw = BitConverter.ToUInt32(addressBytes);
 
             var hopCount = 0U;
-            var rtt = 0U;
+            var rttOut = 0U;
 
-            return GetRTTAndHopCount(addressRaw, ref hopCount, 51, ref rtt) == 1 ? rtt : 0;
+            var success = GetRTTAndHopCount(addressRaw, ref hopCount, 51, ref rttOut) == 1;
+            rtt = rttOut;
+            return success;
         }
 
         [DllImport("Iphlpapi.dll", EntryPoint = "GetRTTAndHopCount", SetLastError = true)]
