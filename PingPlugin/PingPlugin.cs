@@ -86,6 +86,8 @@ namespace PingPlugin
                 PingTrackerKind.Aggregate or PingTrackerKind.Packets => new AggregatePingTracker(this.config, this.addressDetector, this.pluginLog),
                 PingTrackerKind.COM => new ComponentModelPingTracker(this.config, this.addressDetector, this.pluginLog),
                 PingTrackerKind.IpHlpApi => new IpHlpApiPingTracker(this.config, this.addressDetector, this.pluginLog),
+                PingTrackerKind.TcpStats => new TcpStatsPingTracker(this.config, this.addressDetector, this.pluginLog),
+                PingTrackerKind.RawSocket => new RawSocketPingTracker(this.config, this.addressDetector, this.pluginLog),
                 _ => RequestFallbackPingTracker(kind),
             };
         }

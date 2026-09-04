@@ -15,6 +15,14 @@
     "message": "Win32 API",
     "description": "PingPlugin.Kind"
   },
+  "PingTrackerKindTcpStats": {
+    "message": "TCP Stats (Connection RTT)",
+    "description": "PingPlugin.Kind"
+  },
+  "PingTrackerKindRawSocket": {
+    "message": "Raw Socket (ICMP)",
+    "description": "PingPlugin.Kind"
+  },
   "PingTrackerKindPackets": {
     "message": "Game packets",
     "description": "PingPlugin.Kind"
